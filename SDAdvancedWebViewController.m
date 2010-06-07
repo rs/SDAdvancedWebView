@@ -23,12 +23,12 @@
 {
     switch (interfaceOrientation)
     {
-		case UIInterfaceOrientationPortrait: return 0;
-		case UIInterfaceOrientationPortraitUpsideDown: return 180;
-		case UIInterfaceOrientationLandscapeLeft: return 90;
-		case UIInterfaceOrientationLandscapeRight: return -90;
+        case UIInterfaceOrientationPortrait: return 0;
+        case UIInterfaceOrientationPortraitUpsideDown: return 180;
+        case UIInterfaceOrientationLandscapeLeft: return 90;
+        case UIInterfaceOrientationLandscapeRight: return -90;
         default: return 0;
-	}
+    }
 }
 
 #pragma mark SDAdvancedWebViewController (accessors)
