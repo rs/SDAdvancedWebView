@@ -45,7 +45,6 @@
 			isa = PBXGroup;
 			children = (
 				08FB77AEFE84172EC02AAC07 /* Classes */,
-				5388E56911BD2E4600CF8582 /* Javascript */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
@@ -76,13 +75,6 @@
 				AA747D9E0F9514B9006C5449 /* SDAdvancedWebView_Prefix.pch */,
 			);
 			name = "Other Sources";
-			sourceTree = "<group>";
-		};
-		5388E56911BD2E4600CF8582 /* Javascript */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Javascript;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

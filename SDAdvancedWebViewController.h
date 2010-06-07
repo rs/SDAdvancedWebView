@@ -10,11 +10,13 @@
 
 @interface SDAdvancedWebViewController : UIViewController <UIWebViewDelegate, UIAlertViewDelegate>
 {
+    @private
+    UIWebView *webView;
     id<UIWebViewDelegate> delegate;
     NSURL *externalUrl;
 }
 
 @property (nonatomic, retain) IBOutlet UIWebView *webView;
-@property (nonatomic, assign) id<UIWebViewDelegate> delegate;
+@property (nonatomic, assign) IBOutlet id<UIWebViewDelegate> delegate;
 
 @end

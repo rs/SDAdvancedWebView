@@ -12,7 +12,6 @@
 @property (nonatomic, retain) NSURL *externalUrl;
 @end
 
-
 @implementation SDAdvancedWebViewController
 @synthesize delegate, externalUrl;
 @dynamic webView;
@@ -35,24 +34,36 @@
 
 - (UIWebView *)webView
 {
-    return (UIWebView *)self.view;
+    return [[webView retain] autorelease];
 }
 
 - (void)setWebView:(UIWebView *)newWebView
 {
-    self.view = newWebView;
-    if (!newWebView.delegate)
+    if (webView != newWebView)
     {
-        newWebView.delegate = self;
+        [webView release];
+        webView = [newWebView retain];
+
+        if (!webView.delegate)
+        {
+            webView.delegate = self;
+        }
     }
 }
 
 #pragma mark UIViewController
 
-- (void)loadView
+- (void)viewDidLoad
 {
-    self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
-    self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [super viewDidLoad];
+
+    if (!webView)
+    {
+        self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
+        webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        webView.frame = self.view.bounds;
+        [self.view addSubview:webView];
+    }
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -91,42 +102,42 @@
 
 #pragma mark UIWebViewDelegate
 
-- (void)webViewDidStartLoad:(UIWebView *)webView
+- (void)webViewDidStartLoad:(UIWebView *)aWebView
 {
     // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
     // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation os PhoneGap does
     // See code willRotateToInterfaceOrientation:duration: for orientationchange event handling
     NSString *script = [NSString stringWithFormat:@"navigator.orientation = %d;", [self orientationToDegree:[[UIDevice currentDevice] orientation]]];
-    [self.webView stringByEvaluatingJavaScriptFromString:script];
+    [aWebView stringByEvaluatingJavaScriptFromString:script];
 
 
     if ([delegate respondsToSelector:@selector(webViewDidStartLoad:)])
     {
-        [delegate webViewDidStartLoad:webView];
+        [delegate webViewDidStartLoad:aWebView];
     }
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webViewDidFinishLoad:(UIWebView *)aWebView
 {
     if ([delegate respondsToSelector:@selector(webViewDidFinishLoad:)])
     {
-        [delegate webViewDidFinishLoad:webView];
+        [delegate webViewDidFinishLoad:aWebView];
     }
 }
 
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+- (void)webView:(UIWebView *)aWebView didFailLoadWithError:(NSError *)error
 {
     if ([delegate respondsToSelector:@selector(webView:didFailLoadWithError:)])
     {
-        [delegate webView:webView didFailLoadWithError:error];
+        [delegate webView:aWebView didFailLoadWithError:error];
     }
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+- (BOOL)webView:(UIWebView *)aWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
     if ([delegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)])
     {
-        if (![delegate webView:webView shouldStartLoadWithRequest:request navigationType:navigationType])
+        if (![delegate webView:aWebView shouldStartLoadWithRequest:request navigationType:navigationType])
         {
             return NO;
         }
@@ -201,6 +212,9 @@
 
 - (void)dealloc
 {
+    // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
+    [webView loadHTMLString:@"" baseURL:nil];
+    [webView release], webView = nil;
     [externalUrl release], externalUrl = nil;
     [super dealloc];
 }
