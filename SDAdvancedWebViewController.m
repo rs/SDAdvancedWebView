@@ -74,6 +74,21 @@
 	[self.webView stringByEvaluatingJavaScriptFromString:script];
 }
 
+#pragma mark UIResponder
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event
+{
+    if (event.type == UIEventSubtypeMotionShake)
+    {
+        NSString *script = @"(function(){"
+                            "var event = document.createEvent('Events');"
+                            "event.initEvent('shake', false, false);"
+                            "document.dispatchEvent(event);"
+                            "})();";
+        [self.webView stringByEvaluatingJavaScriptFromString:script];
+    }
+}
+
 #pragma mark UIWebViewDelegate
 
 - (void)webViewDidStartLoad:(UIWebView *)webView
