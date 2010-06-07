@@ -76,11 +76,10 @@
     // UIWebView doesn't propagate orientation change event by default as mobile safari does.
     NSString *script = [NSString stringWithFormat:
                         @"(function(){"
+                         "navigator.orientation = %d;"
                          "var event = document.createEvent('Events');"
                          "event.initEvent('orientationchange', false, false);"
-                         "event.orientation = %d;"
                          "document.dispatchEvent(event);"
-                         "navigator.orientation = event.orientation;"
                          "})();", [self orientationToDegree:toInterfaceOrientation]];
 	[self.webView stringByEvaluatingJavaScriptFromString:script];
 }
