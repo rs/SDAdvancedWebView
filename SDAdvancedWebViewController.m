@@ -34,6 +34,11 @@
 
 - (UIWebView *)webView
 {
+    if (!webView && ![self isViewLoaded])
+    {
+        // force the loading of the view in order to generate the webview
+        self.view;
+    }
     return [[webView retain] autorelease];
 }
 
@@ -48,6 +53,13 @@
         {
             webView.delegate = self;
         }
+
+        if (!webView.superview)
+        {
+            webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            webView.frame = self.view.bounds;
+            [self.view addSubview:webView];
+        }
     }
 }
 
@@ -60,10 +72,14 @@
     if (!webView)
     {
         self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
-        webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        webView.frame = self.view.bounds;
-        [self.view addSubview:webView];
     }
+}
+
+- (void)viewDidUnload
+{
+    // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
+    [webView loadHTMLString:@"" baseURL:nil];
+    self.webView = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
