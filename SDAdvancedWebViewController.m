@@ -97,18 +97,6 @@
     self.webView = nil;
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [self becomeFirstResponder]; // Necessary to capture shake events
-    [super viewWillAppear:animated];
-}
-
-- (void) viewWillDisappear:(BOOL)animated
-{
-    [self resignFirstResponder];
-    [super viewWillDisappear:animated];
-}
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;
@@ -181,6 +169,9 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)aWebView
 {
+    // Necessary to capture shake events
+    [self becomeFirstResponder];
+
     NSMutableString *script = [NSMutableString string];
 
     // Set the orientation a second time after page load in order to properly place CSS styles
