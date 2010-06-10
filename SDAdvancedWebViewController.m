@@ -7,13 +7,19 @@
 //
 
 #import "SDAdvancedWebViewController.h"
+#import "SDAdvancedWebViewCommand.h"
+#import "SDAdvancedWebViewPlugin.h"
+
+// Plugins
+#import "SDAWVPluginAccelerometer.h"
 
 @interface SDAdvancedWebViewController ()
 @property (nonatomic, retain) NSURL *externalUrl;
+@property (nonatomic, retain) NSMutableDictionary *loadedPlugins;
 @end
 
 @implementation SDAdvancedWebViewController
-@synthesize delegate, externalUrl;
+@synthesize delegate, externalUrl, loadedPlugins;
 @dynamic webView;
 
 #pragma mark SDAdvancedWebViewController (private)
@@ -37,7 +43,7 @@
     if (!webView && ![self isViewLoaded])
     {
         // force the loading of the view in order to generate the webview
-        self.view;
+        [self view];
     }
     return [[webView retain] autorelease];
 }
@@ -141,12 +147,16 @@
 
 - (void)webViewDidStartLoad:(UIWebView *)aWebView
 {
+    NSMutableString *script = [NSMutableString string];
+
     // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
     // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation os PhoneGap does
     // See code willRotateToInterfaceOrientation:duration: for orientationchange event handling
-    NSString *script = [NSString stringWithFormat:@"navigator.orientation = %d;", [self orientationToDegree:[[UIDevice currentDevice] orientation]]];
+    [script appendFormat:@"navigator.orientation = %d;", [self orientationToDegree:[[UIDevice currentDevice] orientation]]];
     [aWebView stringByEvaluatingJavaScriptFromString:script];
 
+    // Reset the loaded plugins, each pages have to be isolated
+    self.loadedPlugins = [NSMutableDictionary dictionary];
 
     if ([delegate respondsToSelector:@selector(webViewDidStartLoad:)])
     {
@@ -156,6 +166,23 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)aWebView
 {
+    NSMutableString *script = [NSMutableString string];
+
+    // Send device information
+    UIDevice *device = [UIDevice currentDevice];
+    [script appendFormat:@"DeviceInfo = {\"platform\": \"%@\", \"version\": \"%@\", \"uuid\": \"%@\", \"name\": \"%@\"};",
+     device.model, device.systemVersion, device.uniqueIdentifier, device.name];
+
+    // Load communication center code
+    NSString *comcenterPath = [[NSBundle mainBundle] pathForResource:@"SDAdvancedWebViewCommunicationCenter" ofType:@"js"];
+    [script appendString:[NSString stringWithContentsOfFile:comcenterPath encoding:NSUTF8StringEncoding error:nil]];
+
+
+    [aWebView stringByEvaluatingJavaScriptFromString:script];
+
+    // Init plugins for the view
+    [SDAWVPluginAccelerometer installPluginForWebview:aWebView];
+
     if ([delegate respondsToSelector:@selector(webViewDidFinishLoad:)])
     {
         [delegate webViewDidFinishLoad:aWebView];
@@ -181,6 +208,34 @@
     }
 
     NSURL *url = request.URL;
+
+    if ([url.scheme isEqualToString:@"comcenter"])
+    {
+		// Tell the JS code that we've gotten this command, and we're ready for another
+        [aWebView stringByEvaluatingJavaScriptFromString:@"navigator.comcenter.queue.ready = true;"];
+
+        // Try to execute the command
+        SDAdvancedWebViewCommand *command = [[SDAdvancedWebViewCommand alloc] initWithURL:url];
+        SDAdvancedWebViewPlugin *plugin = [loadedPlugins objectForKey:command.pluginClass];
+        if (!plugin)
+        {
+            plugin = [[command.pluginClass alloc] initWithWebView:aWebView];
+            [loadedPlugins setObject:plugin forKey:command.pluginClass];
+            [plugin release];
+        }
+        if ([plugin respondsToSelector:command.pluginSelector])
+        {
+            [plugin performSelector:command.pluginSelector withObject:command.arguments withObject:command.options];
+        }
+        else
+        {
+            NSLog(@"Invalid command: %@", command);
+        }
+
+        [command release];
+
+        return NO;
+    }
 
     // Handles special URLs like URLs to AppStore or other kinds of schemes like tel: appname: etc...
     // The user is asked if he accept to leave the app in order to open those external resources
@@ -253,6 +308,7 @@
     [webView loadHTMLString:@"" baseURL:nil];
     [webView release], webView = nil;
     [externalUrl release], externalUrl = nil;
+    [loadedPlugins release], loadedPlugins = nil;
     [super dealloc];
 }
 

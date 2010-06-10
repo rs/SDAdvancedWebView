@@ -14,6 +14,7 @@
     UIWebView *webView;
     id<UIWebViewDelegate> delegate;
     NSURL *externalUrl;
+    NSMutableDictionary *loadedPlugins;
 }
 
 @property (nonatomic, retain) IBOutlet UIWebView *webView;
