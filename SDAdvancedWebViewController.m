@@ -82,6 +82,18 @@
     self.webView = nil;
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self becomeFirstResponder]; // Necessary to capture shake events
+    [super viewWillAppear:animated];
+}
+
+- (void) viewWillDisappear:(BOOL)animated
+{
+    [self resignFirstResponder];
+    [super viewWillDisappear:animated];
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;
@@ -94,7 +106,7 @@
                         @"(function(){"
                          "navigator.orientation = %d;"
                          "var event = document.createEvent('Events');"
-                         "event.initEvent('orientationchange', false, false);"
+                         "event.initEvent('orientationchange', true);"
                          "document.dispatchEvent(event);"
                          "})();", [self orientationToDegree:toInterfaceOrientation]];
 	[self.webView stringByEvaluatingJavaScriptFromString:script];
@@ -102,16 +114,26 @@
 
 #pragma mark UIResponder
 
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event
 {
     if (event.type == UIEventSubtypeMotionShake)
     {
         NSString *script = @"(function(){"
                             "var event = document.createEvent('Events');"
-                            "event.initEvent('shake', false, false);"
+                            "event.initEvent('shake', true);"
                             "document.dispatchEvent(event);"
                             "})();";
         [self.webView stringByEvaluatingJavaScriptFromString:script];
+    }
+
+    if ([super respondsToSelector:@selector(motionEnded:withEvent:)])
+    {
+        [super motionEnded:motion withEvent:event];
     }
 }
 
