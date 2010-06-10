@@ -36,6 +36,15 @@
     }
 }
 
+- (NSString *)scriptForNewInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    int degree = [self orientationToDegree:interfaceOrientation];
+    return [NSString stringWithFormat:
+            @"navigator.orientation = %d;"
+             "document.body.className = document.body.className.replace(/(?:^| )(?:portrait|landscape)(?: |$)/g, \" \") + \" %@\";",
+            degree, (degree == 0 || degree == 180) ? @"portrait" : @"landscape"];
+}
+
 #pragma mark SDAdvancedWebViewController (accessors)
 
 - (UIWebView *)webView
@@ -110,11 +119,11 @@
     // UIWebView doesn't propagate orientation change event by default as mobile safari does.
     NSString *script = [NSString stringWithFormat:
                         @"(function(){"
-                         "navigator.orientation = %d;"
+                         "%@"
                          "var event = document.createEvent('Events');"
                          "event.initEvent('orientationchange', true);"
                          "document.dispatchEvent(event);"
-                         "})();", [self orientationToDegree:toInterfaceOrientation]];
+                         "})();", [self scriptForNewInterfaceOrientation:toInterfaceOrientation]];
 	[self.webView stringByEvaluatingJavaScriptFromString:script];
 }
 
@@ -152,7 +161,13 @@
     // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
     // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation os PhoneGap does
     // See code willRotateToInterfaceOrientation:duration: for orientationchange event handling
-    [script appendFormat:@"navigator.orientation = %d;", [self orientationToDegree:[[UIDevice currentDevice] orientation]]];
+    [script appendString:[self scriptForNewInterfaceOrientation:[[UIDevice currentDevice] orientation]]];
+
+    // Send device information
+    UIDevice *device = [UIDevice currentDevice];
+    [script appendFormat:@"DeviceInfo = {\"platform\": \"%@\", \"version\": \"%@\", \"uuid\": \"%@\", \"name\": \"%@\"};",
+     device.model, device.systemVersion, device.uniqueIdentifier, device.name];
+
     [aWebView stringByEvaluatingJavaScriptFromString:script];
 
     // Reset the loaded plugins, each pages have to be isolated
@@ -168,10 +183,8 @@
 {
     NSMutableString *script = [NSMutableString string];
 
-    // Send device information
-    UIDevice *device = [UIDevice currentDevice];
-    [script appendFormat:@"DeviceInfo = {\"platform\": \"%@\", \"version\": \"%@\", \"uuid\": \"%@\", \"name\": \"%@\"};",
-     device.model, device.systemVersion, device.uniqueIdentifier, device.name];
+    // Set the orientation a second time after page load in order to properly place CSS styles
+    [script appendString:[self scriptForNewInterfaceOrientation:[[UIDevice currentDevice] orientation]]];
 
     // Load communication center code
     NSString *comcenterPath = [[NSBundle mainBundle] pathForResource:@"SDAdvancedWebViewCommunicationCenter" ofType:@"js"];
