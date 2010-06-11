@@ -54,7 +54,7 @@
         forcedContentOrientation = [self orientationWithDegree:[[arguments objectAtIndex:0] intValue]];
     }
 
-    if ([[UIDevice currentDevice] orientation] != forcedContentOrientation)
+    if (delegate.interfaceOrientation != forcedContentOrientation)
     {
         [delegate retain];
         UIViewController *parent = [delegate parentViewController];
@@ -62,6 +62,11 @@
         [parent presentModalViewController:delegate animated:NO];
         [delegate release];
     }
+}
+
+- (void)cleanup
+{
+    forcedContentOrientation = SDAWVContentOrientationUnknown;
 }
 
 #pragma mark Handlers
@@ -84,10 +89,10 @@
 - (void)notifyCurrentOrientation
 {
     // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
-    // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation os PhoneGap does
-    // See code willRotateToInterfaceOrientation:duration: for orientationchange event handling
+    // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation
+    // as PhoneGap does
     NSString *script = [NSString stringWithFormat:@"SDAdvancedWebViewObjects.orientation._notifyCurrentOrientation(%d)",
-                        [self degreeWithOrientation:[[UIDevice currentDevice] orientation]]];
+                        [self degreeWithOrientation:delegate.interfaceOrientation]];
 	[delegate.webView stringByEvaluatingJavaScriptFromString:script];
 }
 
