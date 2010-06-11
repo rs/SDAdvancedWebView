@@ -21,7 +21,7 @@
 @end
 
 @implementation SDAdvancedWebViewController
-@synthesize delegate, externalUrl, loadedPlugins;
+@synthesize delegate, webViewDelegate, externalUrl, loadedPlugins;
 @dynamic webView;
 
 #pragma mark SDAdvancedWebViewController (private)
@@ -138,9 +138,9 @@
 
 - (void)webViewDidStartLoad:(UIWebView *)aWebView
 {
-    if ([delegate respondsToSelector:@selector(webViewDidStartLoad:)])
+    if ([webViewDelegate respondsToSelector:@selector(webViewDidStartLoad:)])
     {
-        [delegate webViewDidStartLoad:aWebView];
+        [webViewDelegate webViewDidStartLoad:aWebView];
     }
 }
 
@@ -176,25 +176,25 @@
     // Inject the current orientation into the webview
     [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:YES] notifyCurrentOrientation];
 
-    if ([delegate respondsToSelector:@selector(webViewDidFinishLoad:)])
+    if ([webViewDelegate respondsToSelector:@selector(webViewDidFinishLoad:)])
     {
-        [delegate webViewDidFinishLoad:aWebView];
+        [webViewDelegate webViewDidFinishLoad:aWebView];
     }
 }
 
 - (void)webView:(UIWebView *)aWebView didFailLoadWithError:(NSError *)error
 {
-    if ([delegate respondsToSelector:@selector(webView:didFailLoadWithError:)])
+    if ([webViewDelegate respondsToSelector:@selector(webView:didFailLoadWithError:)])
     {
-        [delegate webView:aWebView didFailLoadWithError:error];
+        [webViewDelegate webView:aWebView didFailLoadWithError:error];
     }
 }
 
 - (BOOL)webView:(UIWebView *)aWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
-    if ([delegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)])
+    if ([webViewDelegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)])
     {
-        if (![delegate webView:aWebView shouldStartLoadWithRequest:request navigationType:navigationType])
+        if (![webViewDelegate webView:aWebView shouldStartLoadWithRequest:request navigationType:navigationType])
         {
             return NO;
         }
@@ -284,7 +284,21 @@
     if (buttonIndex >= alertView.firstOtherButtonIndex)
     {
         [[UIApplication sharedApplication] openURL:externalUrl];
+
+        if ([delegate respondsToSelector:@selector(advancedWebViewController:didOpenExternalUrl:)])
+        {
+            [delegate performSelector:@selector(advancedWebViewController:didOpenExternalUrl:) withObject:self withObject:externalUrl];
+        }
     }
+    else if (buttonIndex == alertView.cancelButtonIndex)
+    {
+        if ([delegate respondsToSelector:@selector(advancedWebViewController:didCancelExternalUrl:)])
+        {
+            [delegate performSelector:@selector(advancedWebViewController:didCancelExternalUrl:) withObject:self withObject:externalUrl];
+        }
+    }
+
+    self.externalUrl = nil;
 }
 
 #pragma mark NSObject
