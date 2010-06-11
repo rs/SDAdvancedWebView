@@ -81,7 +81,6 @@
     {
         NSString *script = [NSString stringWithFormat:@"SDAdvancedWebViewObjects.orientation.shouldAutorotateToContentOrientation(%d)",
                             [self degreeWithOrientation:interfaceOrientation]];
-        NSLog(@"should autorotate: %@", [delegate.webView stringByEvaluatingJavaScriptFromString:script]);
         return [[delegate.webView stringByEvaluatingJavaScriptFromString:script] isEqualToString:@"true"];
     }
 }
