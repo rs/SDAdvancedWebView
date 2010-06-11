@@ -59,8 +59,8 @@
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
 {
-    NSString *script = [[NSString alloc] initWithFormat:@"navigator.accelerometer._onAccelUpdate(%f,%f,%f);", acceleration.x, acceleration.y, acceleration.z];
-    [webView stringByEvaluatingJavaScriptFromString:script];
+    NSString *script = [[NSString alloc] initWithFormat:@"SDAdvancedWebViewObjects.accelerometer._onAccelUpdate(%f,%f,%f);", acceleration.x, acceleration.y, acceleration.z];
+    [delegate.webView stringByEvaluatingJavaScriptFromString:script];
     [script release];
 
 }

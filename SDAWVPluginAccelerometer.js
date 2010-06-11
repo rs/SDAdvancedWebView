@@ -90,9 +90,5 @@ function Accelerometer()
     }
 }
 
-if (typeof(navigator.accelerometer) == "undefined")
-{
-    navigator.accelerometer = new Accelerometer();
-}
-
+SDAdvancedWebViewObjects['accelerometer'] = new Accelerometer();
 

@@ -7,15 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SDAdvancedWebViewController.h"
 
 @interface SDAdvancedWebViewPlugin : NSObject
 {
-    UIWebView *webView;
+    SDAdvancedWebViewController *delegate;
 }
 
-@property (nonatomic, retain) UIWebView *webView;
+@property (nonatomic, assign) SDAdvancedWebViewController *delegate;
 
 + (void)installPluginForWebview:(UIWebView *)aWebView;
-- (id)initWithWebView:(UIWebView *)aWebView;
 
 @end

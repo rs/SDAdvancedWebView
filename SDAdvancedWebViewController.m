@@ -1,4 +1,4 @@
-    //
+//
 //  SDAdvancedWebViewController.m
 //  SDAdvancedWebView
 //
@@ -12,6 +12,7 @@
 
 // Plugins
 #import "SDAWVPluginAccelerometer.h"
+#import "SDAWVPluginOrientation.h"
 
 @interface SDAdvancedWebViewController ()
 @property (nonatomic, retain) NSURL *externalUrl;
@@ -24,25 +25,18 @@
 
 #pragma mark SDAdvancedWebViewController (private)
 
-- (int)orientationToDegree:(UIInterfaceOrientation)interfaceOrientation
+- (SDAdvancedWebViewPlugin *)pluginWithName:(NSString *)pluginName load:(BOOL)load
 {
-    switch (interfaceOrientation)
+    SDAdvancedWebViewPlugin *plugin = [loadedPlugins objectForKey:pluginName];
+    if (!plugin && load)
     {
-        case UIInterfaceOrientationPortrait: return 0;
-        case UIInterfaceOrientationPortraitUpsideDown: return 180;
-        case UIInterfaceOrientationLandscapeLeft: return 90;
-        case UIInterfaceOrientationLandscapeRight: return -90;
-        default: return 0;
+        Class pluginClass = NSClassFromString([NSString stringWithFormat:@"SDAWVPlugin%@", pluginName]);
+        plugin = [[pluginClass alloc] init];
+        plugin.delegate = self;
+        [loadedPlugins setObject:plugin forKey:pluginName];
+        [plugin release];
     }
-}
-
-- (NSString *)scriptForNewInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    int degree = [self orientationToDegree:interfaceOrientation];
-    return [NSString stringWithFormat:
-            @"navigator.orientation = %d;"
-             "document.body.className = document.body.className.replace(/(?:^| )(?:portrait|landscape)(?: |$)/g, \" \") + \" %@\";",
-            degree, (degree == 0 || degree == 180) ? @"portrait" : @"landscape"];
+    return plugin;
 }
 
 #pragma mark SDAdvancedWebViewController (accessors)
@@ -99,20 +93,20 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return YES;
+    SDAWVPluginOrientation *orientationPlugin = (SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:NO];
+    if (orientationPlugin)
+    {
+        return [orientationPlugin shouldAutorotateToInterfaceOrientation:interfaceOrientation];
+    }
+    else
+    {
+        return interfaceOrientation == UIInterfaceOrientationPortrait;
+    }
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    // UIWebView doesn't propagate orientation change event by default as mobile safari does.
-    NSString *script = [NSString stringWithFormat:
-                        @"(function(){"
-                         "%@"
-                         "var event = document.createEvent('Events');"
-                         "event.initEvent('orientationchange', true);"
-                         "document.dispatchEvent(event);"
-                         "})();", [self scriptForNewInterfaceOrientation:toInterfaceOrientation]];
-	[self.webView stringByEvaluatingJavaScriptFromString:script];
+    [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:NO] notifyCurrentOrientation];
 }
 
 #pragma mark UIResponder
@@ -144,23 +138,6 @@
 
 - (void)webViewDidStartLoad:(UIWebView *)aWebView
 {
-    NSMutableString *script = [NSMutableString string];
-
-    // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
-    // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation os PhoneGap does
-    // See code willRotateToInterfaceOrientation:duration: for orientationchange event handling
-    [script appendString:[self scriptForNewInterfaceOrientation:[[UIDevice currentDevice] orientation]]];
-
-    // Send device information
-    UIDevice *device = [UIDevice currentDevice];
-    [script appendFormat:@"DeviceInfo = {\"platform\": \"%@\", \"version\": \"%@\", \"uuid\": \"%@\", \"name\": \"%@\"};",
-     device.model, device.systemVersion, device.uniqueIdentifier, device.name];
-
-    [aWebView stringByEvaluatingJavaScriptFromString:script];
-
-    // Reset the loaded plugins, each pages have to be isolated
-    self.loadedPlugins = [NSMutableDictionary dictionary];
-
     if ([delegate respondsToSelector:@selector(webViewDidStartLoad:)])
     {
         [delegate webViewDidStartLoad:aWebView];
@@ -174,18 +151,26 @@
 
     NSMutableString *script = [NSMutableString string];
 
-    // Set the orientation a second time after page load in order to properly place CSS styles
-    [script appendString:[self scriptForNewInterfaceOrientation:[[UIDevice currentDevice] orientation]]];
-
     // Load communication center code
     NSString *comcenterPath = [[NSBundle mainBundle] pathForResource:@"SDAdvancedWebViewCommunicationCenter" ofType:@"js"];
     [script appendString:[NSString stringWithContentsOfFile:comcenterPath encoding:NSUTF8StringEncoding error:nil]];
 
+    // Send device information
+    UIDevice *device = [UIDevice currentDevice];
+    [script appendFormat:@"DeviceInfo = {\"platform\": \"%@\", \"version\": \"%@\", \"uuid\": \"%@\", \"name\": \"%@\"};",
+     device.model, device.systemVersion, device.uniqueIdentifier, device.name];
 
     [aWebView stringByEvaluatingJavaScriptFromString:script];
 
+    // Reset the loaded plugins, each pages have to be isolated
+    self.loadedPlugins = [NSMutableDictionary dictionary];
+
     // Init plugins for the view
     [SDAWVPluginAccelerometer installPluginForWebview:aWebView];
+    [SDAWVPluginOrientation installPluginForWebview:aWebView];
+
+    // Inject the current orientation into the webview
+    [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:YES] notifyCurrentOrientation];
 
     if ([delegate respondsToSelector:@selector(webViewDidFinishLoad:)])
     {
@@ -220,13 +205,7 @@
 
         // Try to execute the command
         SDAdvancedWebViewCommand *command = [[SDAdvancedWebViewCommand alloc] initWithURL:url];
-        SDAdvancedWebViewPlugin *plugin = [loadedPlugins objectForKey:command.pluginClass];
-        if (!plugin)
-        {
-            plugin = [[command.pluginClass alloc] initWithWebView:aWebView];
-            [loadedPlugins setObject:plugin forKey:command.pluginClass];
-            [plugin release];
-        }
+        SDAdvancedWebViewPlugin *plugin = [self pluginWithName:command.pluginName load:YES];
         if ([plugin respondsToSelector:command.pluginSelector])
         {
             [plugin performSelector:command.pluginSelector withObject:command.arguments withObject:command.options];
@@ -312,6 +291,10 @@
     [webView loadHTMLString:@"" baseURL:nil];
     [webView release], webView = nil;
     [externalUrl release], externalUrl = nil;
+    for (SDAdvancedWebViewPlugin *plugin in loadedPlugins.allValues)
+    {
+        plugin.delegate = nil;
+    }
     [loadedPlugins release], loadedPlugins = nil;
     [super dealloc];
 }

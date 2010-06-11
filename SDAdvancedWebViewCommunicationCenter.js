@@ -111,4 +111,33 @@ function SDAdvancedWebViewComCenter()
     }
 }
 
-navigator.comcenter = new SDAdvancedWebViewComCenter()
+SDAdvancedWebViewObjects =
+{
+    'comcenter': new SDAdvancedWebViewComCenter()
+};
+
+(function()
+{
+    var timer = setInterval(function()
+    {
+        var state = document.readyState;
+
+        if ((state == 'loaded' || state == 'complete'))
+        {
+            clearInterval(timer); // stop looking
+
+            for (var name in SDAdvancedWebViewObjects)
+            {
+                navigator[name] = SDAdvancedWebViewObjects[name];
+                if (navigator[name].init != null)
+                {
+                    navigator[name].init();
+                }
+            }
+
+            var event = document.createEvent('Events');
+            event.initEvent('deviceready');
+            document.dispatchEvent(event);
+        }
+    }, 1);
+})();

@@ -11,15 +11,13 @@
 @interface SDAdvancedWebViewCommand : NSObject
 {
     @private
-    NSString *command;
-    Class pluginClass;
+    NSString *command, *pluginName;
     SEL pluginSelector;
 	NSArray* arguments;
 	NSDictionary* options;
 }
 
-@property (nonatomic, retain) NSString *command;
-@property (nonatomic, assign) Class pluginClass;
+@property (nonatomic, retain) NSString *command, *pluginName;
 @property (nonatomic, assign) SEL pluginSelector;
 @property (nonatomic, retain) NSArray *arguments;
 @property (nonatomic, retain) NSDictionary *options;

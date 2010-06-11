@@ -9,7 +9,7 @@
 #import "SDAdvancedWebViewPlugin.h"
 
 @implementation SDAdvancedWebViewPlugin
-@synthesize webView;
+@synthesize delegate;
 
 + (void)installPluginForWebview:(UIWebView *)aWebView
 {
@@ -20,21 +20,5 @@
         [aWebView stringByEvaluatingJavaScriptFromString:script];
     }
 }
-
-- (id)initWithWebView:(UIWebView *)aWebView
-{
-    if ((self = [super init]))
-    {
-        self.webView = aWebView;
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    [webView release], webView = nil;
-    [super dealloc];
-}
-
 
 @end

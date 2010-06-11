@@ -10,7 +10,7 @@
 #import "SDAdvancedWebViewCommand.h"
 
 @implementation SDAdvancedWebViewCommand
-@synthesize command, pluginClass, pluginSelector, arguments, options;
+@synthesize command, pluginName, pluginSelector, arguments, options;
 
 - (id)initWithURL:(NSURL *)url
 {
@@ -45,9 +45,14 @@
         self.options = opts;
 
         NSArray* components = [url.host componentsSeparatedByString:@"."];
-        if (components.count == 2)
+        if (components.count == 1)
         {
-            self.pluginClass = NSClassFromString([NSString stringWithFormat:@"SDAWVPlugin%@", [components objectAtIndex:0]]);
+            self.pluginName = nil;
+            self.pluginSelector = NSSelectorFromString([NSString stringWithFormat:@"%@:options:", url.host]);
+        }
+        else if (components.count == 2)
+        {
+            self.pluginName = [components objectAtIndex:0];
             self.pluginSelector = NSSelectorFromString([NSString stringWithFormat:@"%@:options:", [components objectAtIndex:1]]);
         }
     }
@@ -62,6 +67,7 @@
 - (void)dealloc
 {
     [command release], arguments = nil;
+    [pluginName release], pluginName = nil;
     [arguments release], arguments = nil;
     [options release], options = nil;
     [super dealloc];
