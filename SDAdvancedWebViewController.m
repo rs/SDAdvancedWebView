@@ -13,6 +13,7 @@
 // Plugins
 #import "SDAWVPluginAccelerometer.h"
 #import "SDAWVPluginOrientation.h"
+#import "SDAWVPluginShake.h"
 
 @interface SDAdvancedWebViewController ()
 @property (nonatomic, retain) NSURL *externalUrl;
@@ -120,12 +121,7 @@
 {
     if (event.type == UIEventSubtypeMotionShake)
     {
-        NSString *script = @"(function(){"
-                            "var event = document.createEvent('Events');"
-                            "event.initEvent('shake', true);"
-                            "document.dispatchEvent(event);"
-                            "})();";
-        [self.webView stringByEvaluatingJavaScriptFromString:script];
+        [(SDAWVPluginShake *)[self pluginWithName:@"Shake" load:YES] notifyShakeEvent];
     }
 
     if ([super respondsToSelector:@selector(motionEnded:withEvent:)])
@@ -168,6 +164,7 @@
     // Init plugins for the view
     [SDAWVPluginAccelerometer installPluginForWebview:aWebView];
     [SDAWVPluginOrientation installPluginForWebview:aWebView];
+    [SDAWVPluginShake installPluginForWebview:aWebView];
 
     // Inject the current orientation into the webview
     [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:YES] notifyCurrentOrientation];
