@@ -55,6 +55,11 @@
     }
 }
 
+- (void)cleanup
+{
+    [self stop:nil options:nil];
+}
+
 #pragma mark UIAccelerometerDelegate
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
@@ -63,14 +68,6 @@
     [delegate.webView stringByEvaluatingJavaScriptFromString:script];
     [script release];
 
-}
-
-#pragma mark NSObject
-
-- (void)dealloc
-{
-    [self stop:nil options:nil];
-    [super dealloc];
 }
 
 @end

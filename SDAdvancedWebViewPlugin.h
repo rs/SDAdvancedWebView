@@ -17,5 +17,6 @@
 @property (nonatomic, assign) SDAdvancedWebViewController *delegate;
 
 + (void)installPluginForWebview:(UIWebView *)aWebView;
+- (void)cleanup;
 
 @end

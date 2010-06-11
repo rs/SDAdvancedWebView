@@ -21,4 +21,15 @@
     }
 }
 
+- (void)cleanup
+{
+}
+
+- (void)dealloc
+{
+    [self cleanup];
+    [super dealloc];
+}
+
+
 @end

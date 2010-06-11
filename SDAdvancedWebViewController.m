@@ -34,6 +34,10 @@
         Class pluginClass = NSClassFromString([NSString stringWithFormat:@"SDAWVPlugin%@", pluginName]);
         plugin = [[pluginClass alloc] init];
         plugin.delegate = self;
+        if (!loadedPlugins)
+        {
+            self.loadedPlugins = [NSMutableDictionary dictionary];
+        }
         [loadedPlugins setObject:plugin forKey:pluginName];
         [plugin release];
     }
@@ -158,8 +162,11 @@
 
     [aWebView stringByEvaluatingJavaScriptFromString:script];
 
-    // Reset the loaded plugins, each pages have to be isolated
-    self.loadedPlugins = [NSMutableDictionary dictionary];
+    // Cleanup the loaded plugins, each pages have to be isolated
+    if (loadedPlugins)
+    {
+        [loadedPlugins.allValues makeObjectsPerformSelector:@selector(cleanup)];
+    }
 
     // Init plugins for the view
     [SDAWVPluginAccelerometer installPluginForWebview:aWebView];
@@ -288,10 +295,7 @@
     [webView loadHTMLString:@"" baseURL:nil];
     [webView release], webView = nil;
     [externalUrl release], externalUrl = nil;
-    for (SDAdvancedWebViewPlugin *plugin in loadedPlugins.allValues)
-    {
-        plugin.delegate = nil;
-    }
+    [loadedPlugins.allValues makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
     [loadedPlugins release], loadedPlugins = nil;
     [super dealloc];
 }
