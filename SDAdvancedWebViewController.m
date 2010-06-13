@@ -63,17 +63,31 @@
         [webView release];
         webView = [newWebView retain];
 
-        if (!webView.delegate)
+        if (webView)
         {
-            webView.delegate = self;
+            if (!webView.delegate)
+            {
+                webView.delegate = self;
+            }
+
+            if (!webView.superview)
+            {
+                webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                webView.frame = self.view.bounds;
+                [self.view addSubview:webView];
+            }
+        }
+        else
+        {
+            // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
+            [webView loadHTMLString:@"" baseURL:nil];
+            [webView stopLoading];
+            if (webView.delegate == self)
+            {
+                webView.delegate = nil; // Prevents BAD_EXEC if self is released before webView
+            }
         }
 
-        if (!webView.superview)
-        {
-            webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            webView.frame = self.view.bounds;
-            [self.view addSubview:webView];
-        }
     }
 }
 
@@ -91,8 +105,6 @@
 
 - (void)viewDidUnload
 {
-    // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
-    [webView loadHTMLString:@"" baseURL:nil];
     self.webView = nil;
 }
 
@@ -315,11 +327,7 @@
 
 - (void)dealloc
 {
-    // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
-    [webView loadHTMLString:@"" baseURL:nil];
-    webView.delegate = nil;
-    [webView stopLoading];
-    [webView release], webView = nil;
+    self.webView = nil;
     [externalUrl release], externalUrl = nil;
     [loadedPlugins.allValues makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
     [loadedPlugins release], loadedPlugins = nil;
