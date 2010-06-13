@@ -317,6 +317,8 @@
 {
     // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
     [webView loadHTMLString:@"" baseURL:nil];
+    webView.delegate = nil;
+    [webView stopLoading];
     [webView release], webView = nil;
     [externalUrl release], externalUrl = nil;
     [loadedPlugins.allValues makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
