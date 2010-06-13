@@ -99,7 +99,8 @@
 
     if (!webView)
     {
-        self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
+        self.webView = [[[UIWebView alloc] initWithFrame:self.view.bounds] autorelease];
+        webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     }
 }
 
@@ -214,14 +215,6 @@
 
 - (BOOL)webView:(UIWebView *)aWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
-    if ([webViewDelegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)])
-    {
-        if (![webViewDelegate webView:aWebView shouldStartLoadWithRequest:request navigationType:navigationType])
-        {
-            return NO;
-        }
-    }
-
     NSURL *url = request.URL;
 
     if ([url.scheme isEqualToString:@"comcenter"])
@@ -244,6 +237,14 @@
         [command release];
 
         return NO;
+    }
+
+    if ([webViewDelegate respondsToSelector:@selector(webView:shouldStartLoadWithRequest:navigationType:)])
+    {
+        if (![webViewDelegate webView:aWebView shouldStartLoadWithRequest:request navigationType:navigationType])
+        {
+            return NO;
+        }
     }
 
     // Handles special URLs like URLs to AppStore or other kinds of schemes like tel: appname: etc...
