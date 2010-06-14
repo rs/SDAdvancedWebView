@@ -14,14 +14,14 @@
 #import "SDAWVPluginAccelerometer.h"
 #import "SDAWVPluginOrientation.h"
 #import "SDAWVPluginShake.h"
+#import "SDAWVPluginAudio.h"
 
 @interface SDAdvancedWebViewController ()
-@property (nonatomic, retain) NSURL *externalUrl;
 @property (nonatomic, retain) NSMutableDictionary *loadedPlugins;
 @end
 
 @implementation SDAdvancedWebViewController
-@synthesize delegate, webViewDelegate, externalUrl, loadedPlugins;
+@synthesize delegate, webViewDelegate, loadedPlugins;
 @dynamic webView;
 
 #pragma mark SDAdvancedWebViewController (private)
@@ -195,6 +195,7 @@
     [SDAWVPluginAccelerometer installPluginForWebview:aWebView];
     [SDAWVPluginOrientation installPluginForWebview:aWebView];
     [SDAWVPluginShake installPluginForWebview:aWebView];
+    [SDAWVPluginAudio installPluginForWebview:aWebView];
 
     // Inject the current orientation into the webview
     [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:YES] notifyCurrentOrientation];
@@ -256,8 +257,6 @@
     {
         if ([[UIApplication sharedApplication] canOpenURL:url])
         {
-            self.externalUrl = url;
-
             NSString *targetName;
             if ([url.host isEqualToString:@"phobos.apple.com"] || [url.host isEqualToString:@"itunes.apple.com"])
             {
@@ -306,22 +305,20 @@
 {
     if (buttonIndex >= alertView.firstOtherButtonIndex)
     {
-        [[UIApplication sharedApplication] openURL:externalUrl];
+        [[UIApplication sharedApplication] openURL:webView.request.URL];
 
         if ([delegate respondsToSelector:@selector(advancedWebViewController:didOpenExternalUrl:)])
         {
-            [delegate performSelector:@selector(advancedWebViewController:didOpenExternalUrl:) withObject:self withObject:externalUrl];
+            [delegate performSelector:@selector(advancedWebViewController:didOpenExternalUrl:) withObject:self withObject:webView.request.URL];
         }
     }
     else if (buttonIndex == alertView.cancelButtonIndex)
     {
         if ([delegate respondsToSelector:@selector(advancedWebViewController:didCancelExternalUrl:)])
         {
-            [delegate performSelector:@selector(advancedWebViewController:didCancelExternalUrl:) withObject:self withObject:externalUrl];
+            [delegate performSelector:@selector(advancedWebViewController:didCancelExternalUrl:) withObject:self withObject:webView.request.URL];
         }
     }
-
-    self.externalUrl = nil;
 }
 
 #pragma mark NSObject
@@ -329,7 +326,6 @@
 - (void)dealloc
 {
     self.webView = nil;
-    [externalUrl release], externalUrl = nil;
     [loadedPlugins.allValues makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
     [loadedPlugins release], loadedPlugins = nil;
     [super dealloc];

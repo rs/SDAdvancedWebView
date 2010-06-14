@@ -21,7 +21,6 @@
     UIWebView *webView;
     id<SDAdvancedWebViewControllerDelegate> delegate;
     id<UIWebViewDelegate> webViewDelegate;
-    NSURL *externalUrl;
     NSMutableDictionary *loadedPlugins;
 }
 
