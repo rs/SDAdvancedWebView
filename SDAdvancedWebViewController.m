@@ -60,34 +60,34 @@
 {
     if (webView != newWebView)
     {
-        [webView release];
-        webView = [newWebView retain];
-
-        if (webView)
+        if (newWebView)
         {
-            if (!webView.delegate)
+            if (!newWebView.delegate)
             {
-                webView.delegate = self;
+                newWebView.delegate = self;
             }
 
-            if (!webView.superview)
+            if (!newWebView.superview)
             {
-                webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-                webView.frame = self.view.bounds;
-                [self.view addSubview:webView];
+                newWebView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                newWebView.frame = self.view.bounds;
+                [self.view addSubview:newWebView];
             }
         }
         else
         {
-            // Force release loaded page elements by loading empty page (iPad have a bug with media player not released for instance)
-            [webView loadHTMLString:@"" baseURL:nil];
-            [webView stopLoading];
             if (webView.delegate == self)
             {
                 webView.delegate = nil; // Prevents BAD_EXEC if self is released before webView
             }
+
+            // Force release loaded page elements by loading about:blank special page
+            // (iPad have a bug with media player continuing playback even once webview is released)
+            [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:blank"]]];
         }
 
+        [webView release];
+        webView = [newWebView retain];
     }
 }
 
