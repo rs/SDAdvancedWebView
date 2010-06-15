@@ -67,7 +67,14 @@
     NSString *script = [[NSString alloc] initWithFormat:@"SDAdvancedWebViewObjects.accelerometer._onAccelUpdate(%f,%f,%f);", acceleration.x, acceleration.y, acceleration.z];
     [delegate.webView stringByEvaluatingJavaScriptFromString:script];
     [script release];
+}
 
+#pragma mark NSObject
+
+- (void)dealloc
+{
+    [self stop:nil options:nil];
+    [super dealloc];
 }
 
 @end

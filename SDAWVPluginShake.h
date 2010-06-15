@@ -9,10 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "SDAdvancedWebViewPlugin.h"
 
-@interface SDAWVPluginShake : SDAdvancedWebViewPlugin
+@interface SDAWVPluginShake : SDAdvancedWebViewPlugin <UIAccelerometerDelegate>
 {
+    BOOL histeresisExcited;
+    UIAcceleration *lastAcceleration;
 }
 
-- (void)notifyShakeEvent;
+- (void)start:(NSArray *)arguments options:(NSDictionary *)options;
+- (void)stop:(NSArray *)arguments options:(NSDictionary *)options;
 
 @end

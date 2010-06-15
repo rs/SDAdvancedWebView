@@ -106,6 +106,7 @@
 
 - (void)viewDidUnload
 {
+    [super viewDidUnload];
     self.webView = nil;
 }
 
@@ -137,26 +138,6 @@
     [(SDAWVPluginOrientation *)[self pluginWithName:@"Orientation" load:NO] notifyCurrentOrientation];
 }
 
-#pragma mark UIResponder
-
-- (BOOL)canBecomeFirstResponder
-{
-    return YES;
-}
-
-- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event
-{
-    if (event.type == UIEventSubtypeMotionShake)
-    {
-        [(SDAWVPluginShake *)[self pluginWithName:@"Shake" load:YES] notifyShakeEvent];
-    }
-
-    if ([super respondsToSelector:@selector(motionEnded:withEvent:)])
-    {
-        [super motionEnded:motion withEvent:event];
-    }
-}
-
 #pragma mark UIWebViewDelegate
 
 - (void)webViewDidStartLoad:(UIWebView *)aWebView
@@ -169,9 +150,6 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)aWebView
 {
-    // Necessary to capture shake events
-    [self becomeFirstResponder];
-
     NSMutableString *script = [NSMutableString string];
 
     // Load communication center code
@@ -330,6 +308,5 @@
     [loadedPlugins release], loadedPlugins = nil;
     [super dealloc];
 }
-
 
 @end
