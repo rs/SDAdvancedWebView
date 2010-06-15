@@ -115,7 +115,7 @@ SDAdvancedWebViewObjects =
             }
 
             var event = document.createEvent('Events');
-            event.initEvent('deviceready');
+            event.initEvent('deviceready', true);
             document.dispatchEvent(event);
         }
     }, 1);
