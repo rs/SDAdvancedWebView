@@ -11,27 +11,6 @@ function SDAdvancedWebViewComCenter()
         timer: null
     };
 
-    // List of methods to call while comcenter has finish loading
-    this.constructors = [];
-
-    /**
-     * Add an initialization function to a queue that ensures it will run and initialize
-     * application constructors only once comcenter has been initialized.
-     * @param {Function} func The function callback you want run once comcenter is initialized
-     */
-    this.addConstructor = function(func)
-    {
-        var state = document.readyState;
-        if (state == 'loaded' || state == 'complete')
-        {
-            func();
-        }
-        else
-        {
-            this.constructors.push(func);
-        }
-    }
-
     /**
      * Execute commands in a queued fashion, to ensure commands do not
      * execute with any race conditions, and only run when comcenter is ready to
