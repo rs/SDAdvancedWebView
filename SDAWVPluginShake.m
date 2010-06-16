@@ -58,7 +58,7 @@ static BOOL AccelerationIsShaking(UIAcceleration *last, UIAcceleration *current,
             histeresisExcited = YES;
 
             // Shake detected, notify webview
-            [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.shake._notifyShakeDetected()"];
+            [self call:@"_notifyShakeDetected" args:nil];
         }
         else if (histeresisExcited && !AccelerationIsShaking(self.lastAcceleration, acceleration, 0.2))
         {

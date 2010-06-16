@@ -21,6 +21,38 @@
     }
 }
 
+- (NSString *)call:(NSString *)methodName args:(NSArray *)arguments
+{
+    NSMutableArray *jsArguments = [NSMutableArray arrayWithCapacity:arguments.count];
+    if (arguments)
+    {
+        for (id arg in arguments)
+        {
+            if ([arg isKindOfClass:NSString.class])
+            {
+                [jsArguments addObject:[NSString stringWithFormat:@"\"%@\"",
+                                        [arg stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]]];
+            }
+            else if ([arg isKindOfClass:NSNumber.class])
+            {
+                [jsArguments addObject:[arg stringValue]];
+            }
+            else
+            {
+                [jsArguments addObject:@"null"];
+            }
+        }
+    }
+
+    NSString *pluginName = [[NSStringFromClass(self.class) stringByReplacingOccurrencesOfString:@"SDAWVPlugin" withString:@""] lowercaseString];
+    NSString *script = [NSString stringWithFormat:@"SDAdvancedWebViewObjects.%@.%@(%@)", pluginName, methodName, [jsArguments componentsJoinedByString:@", "]];
+    NSString *result = [delegate.webView stringByEvaluatingJavaScriptFromString:script];
+    #if DEBUG==1
+    NSLog(@"ObjC->JS method: %@ result: %@", script, result);
+    #endif
+    return result;
+}
+
 - (void)cleanup
 {
 }

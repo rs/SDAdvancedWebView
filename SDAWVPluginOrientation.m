@@ -79,9 +79,9 @@
     }
     else
     {
-        NSString *script = [NSString stringWithFormat:@"SDAdvancedWebViewObjects.orientation.shouldAutorotateToContentOrientation(%d)",
-                            [self degreeWithOrientation:interfaceOrientation]];
-        return [[delegate.webView stringByEvaluatingJavaScriptFromString:script] isEqualToString:@"true"];
+        NSString *result = [self call:@"shouldAutorotateToContentOrientation"
+                                 args:[NSArray arrayWithObjects:[NSNumber numberWithInt:[self degreeWithOrientation:interfaceOrientation]], nil]];
+        return [result isEqualToString:@"true"];
     }
 }
 
@@ -90,9 +90,8 @@
     // UIWebView doesn't have the proper interface orientation info set as it is done in Mobile Safari
     // As we can't change the standard window.orientation property, we choose to store the info in navigator.orientation
     // as PhoneGap does
-    NSString *script = [NSString stringWithFormat:@"SDAdvancedWebViewObjects.orientation._notifyCurrentOrientation(%d)",
-                        [self degreeWithOrientation:delegate.interfaceOrientation]];
-	[delegate.webView stringByEvaluatingJavaScriptFromString:script];
+    [self call:@"_notifyCurrentOrientation"
+          args:[NSArray arrayWithObjects:[NSNumber numberWithInt:[self degreeWithOrientation:delegate.interfaceOrientation]], nil]];
 }
 
 @end

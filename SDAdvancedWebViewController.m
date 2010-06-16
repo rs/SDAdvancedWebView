@@ -25,7 +25,7 @@
 @synthesize delegate, webViewDelegate, loadedPlugins, invokeURL;
 @dynamic webView;
 
-#pragma mark SDAdvancedWebViewController (private)
+#pragma mark Public Methods
 
 - (SDAdvancedWebViewPlugin *)pluginWithName:(NSString *)pluginName load:(BOOL)load
 {
@@ -207,6 +207,9 @@
         SDAdvancedWebViewPlugin *plugin = [self pluginWithName:command.pluginName load:YES];
         if ([plugin respondsToSelector:command.pluginSelector])
         {
+            #if DEBUG==1
+            NSLog(@"JS->ObjC command: %@", command);
+            #endif
             [plugin performSelector:command.pluginSelector withObject:command.arguments withObject:command.options];
         }
         else

@@ -46,21 +46,21 @@
     if (audioData.length > kMaxAudioFileBytes)
     {
         [self cancelCurrentDownload];
-        [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onErrorCallback()"];
+        [self call:@"_onErrorCallback" args:nil];
     }
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     self.connection = nil;
-    [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onSuccessCallback()"];
+    [self call:@"_onSuccessCallback" args:nil];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     self.connection = nil;
     self.audioData = nil;
-    [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onErrorCallback()"];
+    [self call:@"_onErrorCallback" args:nil];
 }
 
 #pragma mark Public Methods
@@ -79,7 +79,7 @@
         if ([player.url isEqual:audioURL])
         {
             [player play];
-            [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onPlayingStateChange(true)"];
+            [self call:@"_onPlayingStateChange" args:[NSArray arrayWithObjects:[NSNumber numberWithBool:YES], nil]];
             return;
         }
         else
@@ -119,7 +119,7 @@
     player.numberOfLoops = numberOfLoops;
     if ([player play])
     {
-        [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onPlayingStateChange(true)"];
+        [self call:@"_onPlayingStateChange" args:[NSArray arrayWithObjects:[NSNumber numberWithBool:YES], nil]];
     }
 }
 
@@ -142,7 +142,7 @@
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
 {
-    [delegate.webView stringByEvaluatingJavaScriptFromString:@"SDAdvancedWebViewObjects.audio._onPlayingStateChange(false)"];
+    [self call:@"_onPlayingStateChange" args:[NSArray arrayWithObjects:[NSNumber numberWithBool:NO], nil]];
 }
 
 #pragma mark SDAdvancedWebViewPlugin
