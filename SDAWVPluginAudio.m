@@ -53,6 +53,12 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     self.connection = nil;
+
+    self.player = [[AVAudioPlayer alloc] initWithData:audioData error:nil];
+    player.delegate = self;
+    [player prepareToPlay];
+    self.audioData = nil;
+
     [self call:@"_onSuccessCallback" args:nil];
 }
 
@@ -78,8 +84,7 @@
     {
         if ([player.url isEqual:audioURL])
         {
-            [player play];
-            [self call:@"_onPlayingStateChange" args:[NSArray arrayWithObjects:[NSNumber numberWithBool:YES], nil]];
+            [self call:@"_onSuccessCallback" args:nil];
             return;
         }
         else
@@ -102,18 +107,6 @@
     if (arguments.count >= 1)
     {
         numberOfLoops = [[arguments objectAtIndex:0] intValue];
-    }
-
-    if (!player)
-    {
-        if (!audioData)
-        {
-            return;
-        }
-
-        self.player = [[AVAudioPlayer alloc] initWithData:audioData error:nil];
-        self.audioData = nil;
-        player.delegate = self;
     }
 
     player.numberOfLoops = numberOfLoops;
