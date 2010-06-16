@@ -22,6 +22,7 @@
     id<SDAdvancedWebViewControllerDelegate> delegate;
     id<UIWebViewDelegate> webViewDelegate;
     NSMutableDictionary *loadedPlugins;
+    NSURL *invokeURL;
 }
 
 @property (nonatomic, retain) IBOutlet UIWebView *webView;

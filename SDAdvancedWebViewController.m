@@ -18,10 +18,11 @@
 
 @interface SDAdvancedWebViewController ()
 @property (nonatomic, retain) NSMutableDictionary *loadedPlugins;
+@property (nonatomic, retain) NSURL *invokeURL;
 @end
 
 @implementation SDAdvancedWebViewController
-@synthesize delegate, webViewDelegate, loadedPlugins;
+@synthesize delegate, webViewDelegate, loadedPlugins, invokeURL;
 @dynamic webView;
 
 #pragma mark SDAdvancedWebViewController (private)
@@ -264,6 +265,7 @@
                 targetName = NSLocalizedString(@"another application", @"Do you want to open <another application>");
             }
 
+            self.invokeURL = url;
             [[[[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"You are about to leave %@", nil),
                                                   [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleExecutable"]]
                                          message:[NSString stringWithFormat:NSLocalizedString(@"Do you want to open %@?", nil), targetName]
@@ -283,20 +285,22 @@
 {
     if (buttonIndex >= alertView.firstOtherButtonIndex)
     {
-        [[UIApplication sharedApplication] openURL:webView.request.URL];
+        [[UIApplication sharedApplication] openURL:invokeURL];
 
         if ([delegate respondsToSelector:@selector(advancedWebViewController:didOpenExternalUrl:)])
         {
-            [delegate performSelector:@selector(advancedWebViewController:didOpenExternalUrl:) withObject:self withObject:webView.request.URL];
+            [delegate performSelector:@selector(advancedWebViewController:didOpenExternalUrl:) withObject:self withObject:invokeURL];
         }
     }
     else if (buttonIndex == alertView.cancelButtonIndex)
     {
         if ([delegate respondsToSelector:@selector(advancedWebViewController:didCancelExternalUrl:)])
         {
-            [delegate performSelector:@selector(advancedWebViewController:didCancelExternalUrl:) withObject:self withObject:webView.request.URL];
+            [delegate performSelector:@selector(advancedWebViewController:didCancelExternalUrl:) withObject:self withObject:invokeURL];
         }
     }
+
+    self.invokeURL = nil;
 }
 
 #pragma mark NSObject
@@ -306,6 +310,7 @@
     self.webView = nil;
     [loadedPlugins.allValues makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
     [loadedPlugins release], loadedPlugins = nil;
+    [invokeURL release], invokeURL = nil;
     [super dealloc];
 }
 
