@@ -68,9 +68,9 @@
 - (void)load:(NSArray *)arguments options:(NSDictionary *)options
 {
     NSURL *audioURL = nil;
-    if (arguments.count >= 1)
+    if ([options objectForKey:@"url"])
     {
-        audioURL = [NSURL URLWithString:[arguments objectAtIndex:0]
+        audioURL = [NSURL URLWithString:[options objectForKey:@"url"]
                           relativeToURL:delegate.webView.request.URL];
     }
 

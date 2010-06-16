@@ -33,7 +33,7 @@ function Audio()
     {
         this._onSuccessCallback = onSuccessCallback;
         this._onErrorCallback = onErrorCallback;
-        navigator.comcenter.exec("Audio.load", url);
+        navigator.comcenter.exec("Audio.load", {"url": url});
     }
 
     /**
