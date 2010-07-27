@@ -120,17 +120,22 @@
     }
     else
     {
-        // Web content not loaded yet, applying some defaults
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-        {
-            // On iPhone, upside down orientation is not advised
-            return interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
-        }
-        else
-        {
-            // On iPad, all orientations are allowed by default (until web content says something else)
-            return YES;
-        }
+        return [self shouldAutorotateToInterfaceOrientationDefault:(UIInterfaceOrientation)interfaceOrientation];
+    }
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientationDefault:(UIInterfaceOrientation)interfaceOrientation
+{
+    // Web content not loaded yet, applying some defaults
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+    {
+        // On iPhone, upside down orientation is not advised
+        return interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+    }
+    else
+    {
+        // On iPad, all orientations are allowed by default (until web content says something else)
+        return YES;
     }
 }
 

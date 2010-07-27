@@ -31,5 +31,6 @@
 @property (nonatomic, assign) IBOutlet id<UIWebViewDelegate> webViewDelegate;
 
 - (SDAdvancedWebViewPlugin *)pluginWithName:(NSString *)pluginName load:(BOOL)load;
+- (BOOL)shouldAutorotateToInterfaceOrientationDefault:(UIInterfaceOrientation)interfaceOrientation;
 
 @end
