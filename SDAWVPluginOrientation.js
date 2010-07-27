@@ -16,14 +16,7 @@ function Orientation()
 
     this.shouldAutorotateToContentOrientation = function(orientation)
     {
-        if (DeviceInfo.platform.match(/^iPad/))
-        {
-            return true;
-        }
-        else
-        {
-            return orientation != 180;
-        }
+        return null;
     }
 
     this._notifyCurrentOrientation = function(orientation)

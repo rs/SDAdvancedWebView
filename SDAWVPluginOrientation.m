@@ -81,7 +81,14 @@
     {
         NSString *result = [self call:@"shouldAutorotateToContentOrientation"
                                  args:[NSArray arrayWithObjects:[NSNumber numberWithInt:[self degreeWithOrientation:interfaceOrientation]], nil]];
-        return [result isEqualToString:@"true"];
+        if ([result isEqualToString:@""])
+        {
+            return [delegate shouldAutorotateToInterfaceOrientationDefault:interfaceOrientation];
+        }
+        else
+        {
+            return [result isEqualToString:@"true"];
+        }
     }
 }
 
