@@ -268,6 +268,10 @@
             {
                 targetName = NSLocalizedString(@"Text", @"Do you want to open <the iPhone application name for Text>");
             }
+            else if ([url.scheme isEqualToString:@"tel"])
+            {
+                targetName = NSLocalizedString(@"Phone", @"Do you want to open: <the iPhone application name for Phone>");
+            }
             else
             {
                 targetName = NSLocalizedString(@"another application", @"Do you want to open <another application>");
